@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fizică Olimpiadă - Platformă de Pregătire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 300px);
+        }
+
+        .section {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 1.5rem 0 1rem;
+            font-size: 1.5rem;
+        }
+
+        .problem-list {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-left: 4px solid #667eea;
+            margin: 1rem 0;
+        }
+
+        .problem-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .problem-item:last-child {
+            border-bottom: none;
+        }
+
+        .simulation-canvas {
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            background: #000;
+            display: block;
+            margin: 1rem auto;
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            nav ul { flex-direction: column; gap: 0.5rem; }
+            .simulation-canvas { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔬 Fizică Olimpiadă</h1>
+            <p class="subtitle">Platformă de pregătire pentru performanță</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#home" class="nav-link active" onclick="showSection('home')">Acasă</a></li>
+                <li><a href="#teorie" class="nav-link" onclick="showSection('teorie')">Teorie</a></li>
+                <li><a href="#probleme" class="nav-link" onclick="showSection('probleme')">Probleme</a></li>
+                <li><a href="#simulari" class="nav-link" onclick="showSection('simulari')">Simulări</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <h2>Bine ai venit!</h2>
+            <p>Această platformă este concepută pentru a te ajuta să te pregătești sistematic pentru olimpiada de fizică.</p>
+            
+            <h3>Structura platformei:</h3>
+            <div class="info-box">
+                <p><strong>📚 Teorie:</strong> Concepte fundamentale, formule și explicații detaliate organizate pe capitole</p>
+            </div>
+            <div class="info-box">
+                <p><strong>📝 Probleme:</strong> Seturi structurate de probleme cu referințe la cărți și culegeri</p>
+            </div>
+            <div class="info-box">
+                <p><strong>⚡ Simulări:</strong> Experimente interactive pentru vizualizarea fenomenelor fizice</p>
+            </div>
+
+            <h3>Cum să folosești platforma:</h3>
+            <p>1. Începe cu secțiunea <strong>Teorie</strong> pentru a înțelege conceptele<br>
+            2. Exersează cu <strong>Probleme</strong> organizate pe dificultate<br>
+            3. Vizualizează fenomenele cu <strong>Simulări</strong> interactive<br>
+            4. Revino periodic pentru a fixa cunoștințele</p>
+        </section>
+
+        <!-- Teorie Section -->
+        <section id="teorie" class="section">
+            <h2>📚 Teorie</h2>
+            
+            <h3>Capitolul 1: Cinematică</h3>
+            <p><strong>1.1 Mișcarea rectilinie uniformă (MRU)</strong></p>
+            <p>Mișcarea rectilinie uniformă este caracterizată prin:</p>
+            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                <li>Traiectorie: linie dreaptă</li>
+                <li>Viteză constantă: v = constant</li>
+                <li>Accelerație zero: a = 0</li>
+            </ul>
+
+            <div class="info-box">
+                <p><strong>Formule fundamentale:</strong></p>
+                <p>• Distanța parcursă: <strong>d = v × t</strong></p>
+                <p>• Poziția: <strong>x(t) = x₀ + v × t</strong></p>
+            </div>
+
+            <p><strong>1.2 Mișcarea rectilinie uniform variată (MRUV)</strong></p>
+            <p>Caracteristici:</p>
+            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                <li>Accelerație constantă: a = constant</li>
+                <li>Viteza variază liniar cu timpul</li>
+            </ul>
+
+            <div class="info-box">
+                <p><strong>Formule fundamentale:</strong></p>
+                <p>• Viteza: <strong>v(t) = v₀ + a × t</strong></p>
+                <p>• Poziția: <strong>x(t) = x₀ + v₀ × t + (a × t²) / 2</strong></p>
+                <p>• Relația fără timp: <strong>v² = v₀² + 2 × a × Δx</strong></p>
+            </div>
+
+            <h3>Exemple rezolvate:</h3>
+            <p><em>(Secțiunea va fi extinsă cu exemple detaliate)</em></p>
+        </section>
+
+        <!-- Probleme Section -->
+        <section id="probleme" class="section">
+            <h2>📝 Probleme</h2>
+            
+            <h3>Cinematică - Nivel Începător</h3>
+            <div class="problem-list">
+                <div class="problem-item">
+                    <strong>P1.</strong> Manual clasa a IX-a, pag. 23, prob. 15
+                </div>
+                <div class="problem-item">
+                    <strong>P2.</strong> Culegere Antohe, cap. 1, prob. 1.12
+                </div>
+                <div class="problem-item">
+                    <strong>P3.</strong> Manual clasa a IX-a, pag. 24, prob. 18
+                </div>
+                <div class="problem-item">
+                    <strong>P4.</strong> Probleme de Fizică - Badea & Sandu, prob. 25
+                </div>
+            </div>
+
+            <h3>Cinematică - Nivel Mediu</h3>
+            <div class="problem-list">
+                <div class="problem-item">
+                    <strong>P5.</strong> Olimpiade 2019 - Faza județeană, clasa a IX-a, S1-P2
+                </div>
+                <div class="problem-item">
+                    <strong>P6.</strong> Culegere Antohe, cap. 1, prob. 1.45
+                </div>
+                <div class="problem-item">
+                    <strong>P7.</strong> Manual clasa a IX-a, pag. 31, prob. 35
+                </div>
+            </div>
+
+            <h3>Cinematică - Nivel Avansat</h3>
+            <div class="problem-list">
+                <div class="problem-item">
+                    <strong>P8.</strong> Olimpiade 2020 - Faza națională, clasa a IX-a, S2-P1
+                </div>
+                <div class="problem-item">
+                    <strong>P9.</strong> Physics by Example - 200 Problems, prob. 47
+                </div>
+                <div class="problem-item">
+                    <strong>P10.</strong> Probleme propuse - Colecție personală, Set 3, P12
+                </div>
+            </div>
+
+            <p style="margin-top: 2rem;"><em>💡 Recomandare: Rezolvă problemele în ordine crescătoare a dificultății. Notează-ți timpul de rezolvare și conceptele folosite.</em></p>
+        </section>
+
+        <!-- Simulari Section -->
+        <section id="simulari" class="section">
+            <h2>⚡ Simulări Interactive</h2>
+            
+            <h3>Simulare: Mișcare cu Accelerație Constantă</h3>
+            <p>Observă cum accelerația constantă modifică viteza și poziția unui corp. Apasă pe canvas pentru a plasa un punct.</p>
+            
+            <div class="controls">
+                <button onclick="sim.start()">▶️ Start</button>
+                <button onclick="sim.pause()">⏸️ Pauză</button>
+                <button onclick="sim.reset()">🔄 Reset</button>
+            </div>
+
+            <canvas id="simCanvas" class="simulation-canvas" width="800" height="400"></canvas>
+
+            <div class="info-box">
+                <p><strong>Parametri actuali:</strong></p>
+                <p id="simInfo">Accelerație: 2 m/s² | Viteză: 0 m/s | Poziție: 0 m</p>
+            </div>
+
+            <div class="controls">
+                <label>Accelerație (m/s²): 
+                    <input type="range" id="accelSlider" min="-5" max="5" value="2" step="0.5" 
+                           oninput="sim.setAccel(this.value)" style="width: 200px; margin-left: 10px;">
+                    <span id="accelValue">2</span>
+                </label>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Platformă Fizică Olimpiadă | Creat pentru performanță în educație</p>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Physics Simulation
+        const sim = {
+            canvas: null,
+            ctx: null,
+            running: false,
+            ball: { x: 50, y: 350, vx: 50, vy: 0, r: 15 },
+            accel: 2,
+            time: 0,
+            particles: [],
+
+            init() {
+                this.canvas = document.getElementById('simCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.reset();
+                this.draw();
+
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.particles.push({ x, y, life: 30 });
+                });
+            },
+
+            start() {
+                this.running = true;
+                this.animate();
+            },
+
+            pause() {
+                this.running = false;
+            },
+
+            reset() {
+                this.ball = { x: 50, y: 350, vx: 50, vy: 0, r: 15 };
+                this.time = 0;
+                this.particles = [];
+                this.updateInfo();
+                this.draw();
+            },
+
+            setAccel(val) {
+                this.accel = parseFloat(val);
+                document.getElementById('accelValue').textContent = val;
+            },
+
+            updateInfo() {
+                const speed = Math.abs(this.ball.vx).toFixed(1);
+                const pos = ((this.ball.x - 50) / 10).toFixed(1);
+                document.getElementById('simInfo').textContent = 
+                    `Accelerație: ${this.accel} m/s² | Viteză: ${speed} m/s | Poziție: ${pos} m`;
+            },
+
+            animate() {
+                if (!this.running) return;
+
+                const dt = 0.016;
+                this.time += dt;
+
+                this.ball.vx += this.accel * 10 * dt;
+                this.ball.x += this.ball.vx * dt;
+
+                if (this.ball.x > this.canvas.width - this.ball.r || this.ball.x < this.ball.r) {
+                    this.ball.vx *= -0.8;
+                    this.ball.x = Math.max(this.ball.r, Math.min(this.canvas.width - this.ball.r, this.ball.x));
+                }
+
+                this.particles = this.particles.filter(p => {
+                    p.life--;
+                    return p.life > 0;
+                });
+
+                this.updateInfo();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            },
+
+            draw() {
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i < this.canvas.width; i += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(i, 0);
+                    this.ctx.lineTo(i, this.canvas.height);
+                    this.ctx.stroke();
+                }
+
+                this.particles.forEach(p => {
+                    this.ctx.fillStyle = `rgba(102, 126, 234, ${p.life / 30})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                const gradient = this.ctx.createRadialGradient(
+                    this.ball.x, this.ball.y, 0,
+                    this.ball.x, this.ball.y, this.ball.r
+                );
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.r, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#0f0';
+                this.ctx.fillText(`v = ${Math.abs(this.ball.vx).toFixed(0)} px/s`, 10, 20);
+                this.ctx.fillText(`a = ${this.accel} m/s²`, 10, 40);
+            }
+        };
+
+        window.addEventListener('load', () => sim.init());
+    </script>
+</body>
+  </html>
