@@ -228,38 +228,7 @@
         <!-- Teorie Section -->
         <section id="teorie" class="section">
             <h2>📚 Teorie</h2>
-            
-            <h3>Capitolul 1: Cinematică</h3>
-            <p><strong>1.1 Mișcarea rectilinie uniformă (MRU)</strong></p>
-            <p>Mișcarea rectilinie uniformă este caracterizată prin:</p>
-            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                <li>Traiectorie: linie dreaptă</li>
-                <li>Viteză constantă: v = constant</li>
-                <li>Accelerație zero: a = 0</li>
-            </ul>
-
-            <div class="info-box">
-                <p><strong>Formule fundamentale:</strong></p>
-                <p>• Distanța parcursă: <strong>d = v × t</strong></p>
-                <p>• Poziția: <strong>x(t) = x₀ + v × t</strong></p>
-            </div>
-
-            <p><strong>1.2 Mișcarea rectilinie uniform variată (MRUV)</strong></p>
-            <p>Caracteristici:</p>
-            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                <li>Accelerație constantă: a = constant</li>
-                <li>Viteza variază liniar cu timpul</li>
-            </ul>
-
-            <div class="info-box">
-                <p><strong>Formule fundamentale:</strong></p>
-                <p>• Viteza: <strong>v(t) = v₀ + a × t</strong></p>
-                <p>• Poziția: <strong>x(t) = x₀ + v₀ × t + (a × t²) / 2</strong></p>
-                <p>• Relația fără timp: <strong>v² = v₀² + 2 × a × Δx</strong></p>
-            </div>
-
-            <h3>Exemple rezolvate:</h3>
-            <p><em>(Secțiunea va fi extinsă cu exemple detaliate)</em></p>
+            <p><em>Conținutul de teorie va fi adăugat pas cu pas...</em></p>
         </section>
 
         <!-- Probleme Section -->
@@ -316,8 +285,23 @@
             <h2>⚡ Simulări Interactive</h2>
             
             <h3>Simulare: Mișcare cu Accelerație Constantă</h3>
-            <p>Observă cum accelerația constantă modifică viteza și poziția unui corp. Ghost-urile apar la intervale egale de timp (τ = 1s) pentru a vizualiza variația distanței parcurse.</p>
             
+            <div class="controls">
+                <label>x₀ (m): 
+                    <input type="number" id="x0Input" value="0" step="0.5" 
+                           style="width: 80px; padding: 0.3rem; margin-left: 5px;">
+                </label>
+                <label>v₀ (m/s): 
+                    <input type="number" id="v0Input" value="0" step="0.5" 
+                           style="width: 80px; padding: 0.3rem; margin-left: 5px;">
+                </label>
+                <label>a (m/s²): 
+                    <input type="range" id="accelSlider" min="-5" max="5" value="2" step="0.5" 
+                           oninput="sim.setAccel(this.value)" style="width: 150px; margin-left: 5px;">
+                    <span id="accelValue">2.0</span>
+                </label>
+            </div>
+
             <div class="controls">
                 <button onclick="sim.start()">▶️ Start</button>
                 <button onclick="sim.pause()">⏸️ Pauză</button>
@@ -329,14 +313,6 @@
             <div class="info-box">
                 <p><strong>Parametri actuali:</strong></p>
                 <p id="simInfo">t = 0.0 s | v = 0.0 m/s | x = 0.0 m | a = 2.0 m/s²</p>
-            </div>
-
-            <div class="controls">
-                <label>Accelerație (m/s²): 
-                    <input type="range" id="accelSlider" min="-5" max="5" value="2" step="0.5" 
-                           oninput="sim.setAccel(this.value)" style="width: 200px; margin-left: 10px;">
-                    <span id="accelValue">2.0</span>
-                </label>
             </div>
 
             <h3 style="margin-top: 2rem;">Grafice în timp real</h3>
@@ -376,6 +352,8 @@
             graphVCtx: null,
             graphXCtx: null,
             running: false,
+            x0Init: 0,
+            v0Init: 0,
             x0: 100,
             y0: 100,
             x: 0,
@@ -385,7 +363,7 @@
             scale: 40,
             ghosts: [],
             lastGhostTime: 0,
-            ghostInterval: 1.0,
+            ghostInterval: 0.5,
             dataPoints: [],
             maxDataPoints: 100,
 
@@ -403,6 +381,14 @@
             },
 
             start() {
+                this.x0Init = parseFloat(document.getElementById('x0Input').value) || 0;
+                this.v0Init = parseFloat(document.getElementById('v0Input').value) || 0;
+                
+                if (!this.running) {
+                    this.x = this.x0Init;
+                    this.v = this.v0Init;
+                }
+                
                 this.running = true;
                 this.animate();
             },
@@ -412,8 +398,10 @@
             },
 
             reset() {
-                this.x = 0;
-                this.v = 0;
+                this.x0Init = parseFloat(document.getElementById('x0Input').value) || 0;
+                this.v0Init = parseFloat(document.getElementById('v0Input').value) || 0;
+                this.x = this.x0Init;
+                this.v = this.v0Init;
                 this.time = 0;
                 this.ghosts = [];
                 this.lastGhostTime = 0;
@@ -445,7 +433,7 @@
                 if (this.time - this.lastGhostTime >= this.ghostInterval) {
                     this.ghosts.push({ x: this.x, time: this.time });
                     this.lastGhostTime = this.time;
-                    if (this.ghosts.length > 15) this.ghosts.shift();
+                    if (this.ghosts.length > 20) this.ghosts.shift();
                 }
 
                 this.dataPoints.push({ t: this.time, v: this.v, x: this.x });
@@ -453,7 +441,7 @@
                     this.dataPoints.shift();
                 }
 
-                if (Math.abs(this.x) > 15) {
+                if (Math.abs(this.x - this.x0Init) > 15) {
                     this.pause();
                 }
 
@@ -514,19 +502,15 @@
 
                 this.ghosts.forEach((ghost, i) => {
                     const opacity = 0.3 + (i / this.ghosts.length) * 0.4;
-                    const px = this.x0 + ghost.x * this.scale;
+                    const px = this.x0 + (ghost.x - this.x0Init) * this.scale;
                     
                     this.ctx.fillStyle = `rgba(102, 126, 234, ${opacity})`;
                     this.ctx.beginPath();
                     this.ctx.arc(px, this.y0, 8, 0, Math.PI * 2);
                     this.ctx.fill();
-                    
-                    this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                    this.ctx.font = '10px Arial';
-                    this.ctx.fillText(`τ=${i + 1}`, px - 12, this.y0 - 15);
                 });
 
-                const currentX = this.x0 + this.x * this.scale;
+                const currentX = this.x0 + (this.x - this.x0Init) * this.scale;
                 const gradient = this.ctx.createRadialGradient(currentX, this.y0, 0, currentX, this.y0, 12);
                 gradient.addColorStop(0, '#667eea');
                 gradient.addColorStop(1, '#764ba2');
@@ -542,13 +526,20 @@
             },
 
             drawGraphs() {
+                const maxTime = this.dataPoints.length > 0 ? Math.max(...this.dataPoints.map(p => p.t)) : 5;
+                const finalV = this.v0Init + this.accel * maxTime;
+                
                 this.drawGraph(this.graphVCtx, this.graphVCanvas, 'v (m/s)', 't (s)', 
-                    this.dataPoints.map(p => ({ x: p.t, y: p.v })), '#667eea');
+                    this.dataPoints.map(p => ({ x: p.t, y: p.v })), '#667eea', 
+                    { xMax: maxTime, yMin: Math.min(this.v0Init, finalV), yMax: Math.max(this.v0Init, finalV) });
+                
+                const finalX = this.x0Init + this.v0Init * maxTime + 0.5 * this.accel * maxTime * maxTime;
                 this.drawGraph(this.graphXCtx, this.graphXCanvas, 'x (m)', 't (s)', 
-                    this.dataPoints.map(p => ({ x: p.t, y: p.x })), '#764ba2');
+                    this.dataPoints.map(p => ({ x: p.t, y: p.x })), '#764ba2',
+                    { xMax: maxTime, yMin: Math.min(this.x0Init, finalX), yMax: Math.max(this.x0Init, finalX) });
             },
 
-            drawGraph(ctx, canvas, yLabel, xLabel, data, color) {
+            drawGraph(ctx, canvas, yLabel, xLabel, data, color, limits = {}) {
                 const w = canvas.width;
                 const h = canvas.height;
                 const pad = 50;
@@ -581,10 +572,10 @@
 
                 if (data.length < 2) return;
 
-                const xMin = Math.min(...data.map(p => p.x));
-                const xMax = Math.max(...data.map(p => p.x));
-                const yMin = Math.min(...data.map(p => p.y));
-                const yMax = Math.max(...data.map(p => p.y));
+                const xMin = 0;
+                const xMax = limits.xMax || Math.max(...data.map(p => p.x));
+                const yMin = limits.yMin !== undefined ? limits.yMin : Math.min(...data.map(p => p.y));
+                const yMax = limits.yMax !== undefined ? limits.yMax : Math.max(...data.map(p => p.y));
                 
                 const xRange = xMax - xMin || 1;
                 const yRange = yMax - yMin || 1;
