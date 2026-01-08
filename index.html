@@ -316,7 +316,7 @@
             <h2>⚡ Simulări Interactive</h2>
             
             <h3>Simulare: Mișcare cu Accelerație Constantă</h3>
-            <p>Observă cum accelerația constantă modifică viteza și poziția unui corp. Apasă pe canvas pentru a plasa un punct.</p>
+            <p>Observă cum accelerația constantă modifică viteza și poziția unui corp. Ghost-urile apar la intervale egale de timp (τ = 1s) pentru a vizualiza variația distanței parcurse.</p>
             
             <div class="controls">
                 <button onclick="sim.start()">▶️ Start</button>
@@ -324,19 +324,29 @@
                 <button onclick="sim.reset()">🔄 Reset</button>
             </div>
 
-            <canvas id="simCanvas" class="simulation-canvas" width="800" height="400"></canvas>
+            <canvas id="simCanvas" class="simulation-canvas" width="800" height="200"></canvas>
 
             <div class="info-box">
                 <p><strong>Parametri actuali:</strong></p>
-                <p id="simInfo">Accelerație: 2 m/s² | Viteză: 0 m/s | Poziție: 0 m</p>
+                <p id="simInfo">t = 0.0 s | v = 0.0 m/s | x = 0.0 m | a = 2.0 m/s²</p>
             </div>
 
             <div class="controls">
                 <label>Accelerație (m/s²): 
                     <input type="range" id="accelSlider" min="-5" max="5" value="2" step="0.5" 
                            oninput="sim.setAccel(this.value)" style="width: 200px; margin-left: 10px;">
-                    <span id="accelValue">2</span>
+                    <span id="accelValue">2.0</span>
                 </label>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Grafice în timp real</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <canvas id="graphV" width="400" height="250" style="border: 2px solid #667eea; border-radius: 5px; background: white; width: 100%;"></canvas>
+                </div>
+                <div>
+                    <canvas id="graphX" width="400" height="250" style="border: 2px solid #764ba2; border-radius: 5px; background: white; width: 100%;"></canvas>
+                </div>
             </div>
         </section>
     </main>
@@ -361,24 +371,35 @@
         const sim = {
             canvas: null,
             ctx: null,
+            graphVCanvas: null,
+            graphXCanvas: null,
+            graphVCtx: null,
+            graphXCtx: null,
             running: false,
-            ball: { x: 50, y: 350, vx: 50, vy: 0, r: 15 },
+            x0: 100,
+            y0: 100,
+            x: 0,
+            v: 0,
             accel: 2,
             time: 0,
-            particles: [],
+            scale: 40,
+            ghosts: [],
+            lastGhostTime: 0,
+            ghostInterval: 1.0,
+            dataPoints: [],
+            maxDataPoints: 100,
 
             init() {
                 this.canvas = document.getElementById('simCanvas');
                 this.ctx = this.canvas.getContext('2d');
+                this.graphVCanvas = document.getElementById('graphV');
+                this.graphXCanvas = document.getElementById('graphX');
+                this.graphVCtx = this.graphVCanvas.getContext('2d');
+                this.graphXCtx = this.graphXCanvas.getContext('2d');
+                
                 this.reset();
                 this.draw();
-
-                this.canvas.addEventListener('click', (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    this.particles.push({ x, y, life: 30 });
-                });
+                this.drawGraphs();
             },
 
             start() {
@@ -391,11 +412,15 @@
             },
 
             reset() {
-                this.ball = { x: 50, y: 350, vx: 50, vy: 0, r: 15 };
+                this.x = 0;
+                this.v = 0;
                 this.time = 0;
-                this.particles = [];
+                this.ghosts = [];
+                this.lastGhostTime = 0;
+                this.dataPoints = [];
                 this.updateInfo();
                 this.draw();
+                this.drawGraphs();
             },
 
             setAccel(val) {
@@ -404,79 +429,188 @@
             },
 
             updateInfo() {
-                const speed = Math.abs(this.ball.vx).toFixed(1);
-                const pos = ((this.ball.x - 50) / 10).toFixed(1);
                 document.getElementById('simInfo').textContent = 
-                    `Accelerație: ${this.accel} m/s² | Viteză: ${speed} m/s | Poziție: ${pos} m`;
+                    `t = ${this.time.toFixed(1)} s | v = ${this.v.toFixed(1)} m/s | x = ${this.x.toFixed(1)} m | a = ${this.accel.toFixed(1)} m/s²`;
             },
 
             animate() {
                 if (!this.running) return;
 
-                const dt = 0.016;
+                const dt = 0.03;
                 this.time += dt;
+                
+                this.v += this.accel * dt;
+                this.x += this.v * dt;
 
-                this.ball.vx += this.accel * 10 * dt;
-                this.ball.x += this.ball.vx * dt;
-
-                if (this.ball.x > this.canvas.width - this.ball.r || this.ball.x < this.ball.r) {
-                    this.ball.vx *= -0.8;
-                    this.ball.x = Math.max(this.ball.r, Math.min(this.canvas.width - this.ball.r, this.ball.x));
+                if (this.time - this.lastGhostTime >= this.ghostInterval) {
+                    this.ghosts.push({ x: this.x, time: this.time });
+                    this.lastGhostTime = this.time;
+                    if (this.ghosts.length > 15) this.ghosts.shift();
                 }
 
-                this.particles = this.particles.filter(p => {
-                    p.life--;
-                    return p.life > 0;
-                });
+                this.dataPoints.push({ t: this.time, v: this.v, x: this.x });
+                if (this.dataPoints.length > this.maxDataPoints) {
+                    this.dataPoints.shift();
+                }
+
+                if (Math.abs(this.x) > 15) {
+                    this.pause();
+                }
 
                 this.updateInfo();
                 this.draw();
+                this.drawGraphs();
                 requestAnimationFrame(() => this.animate());
             },
 
             draw() {
-                this.ctx.fillStyle = '#000';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                
+                this.ctx.fillStyle = '#1a1a1a';
+                this.ctx.fillRect(0, 0, w, h);
 
                 this.ctx.strokeStyle = '#333';
                 this.ctx.lineWidth = 1;
-                for (let i = 0; i < this.canvas.width; i += 50) {
+                for (let i = 0; i < w; i += 50) {
                     this.ctx.beginPath();
                     this.ctx.moveTo(i, 0);
-                    this.ctx.lineTo(i, this.canvas.height);
+                    this.ctx.lineTo(i, h);
                     this.ctx.stroke();
                 }
 
-                this.particles.forEach(p => {
-                    this.ctx.fillStyle = `rgba(102, 126, 234, ${p.life / 30})`;
+                this.ctx.strokeStyle = '#555';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, this.y0);
+                this.ctx.lineTo(w, this.y0);
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#ff4444';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x0, this.y0, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.fillStyle = '#fff';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.fillText('O', this.x0 - 6, this.y0 - 12);
+
+                const arrowX = this.x0 + 60;
+                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x0 + 20, this.y0);
+                this.ctx.lineTo(arrowX, this.y0);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(arrowX, this.y0);
+                this.ctx.lineTo(arrowX - 10, this.y0 - 6);
+                this.ctx.lineTo(arrowX - 10, this.y0 + 6);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText('+ Ox', arrowX + 10, this.y0 + 5);
+
+                this.ghosts.forEach((ghost, i) => {
+                    const opacity = 0.3 + (i / this.ghosts.length) * 0.4;
+                    const px = this.x0 + ghost.x * this.scale;
+                    
+                    this.ctx.fillStyle = `rgba(102, 126, 234, ${opacity})`;
                     this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    this.ctx.arc(px, this.y0, 8, 0, Math.PI * 2);
                     this.ctx.fill();
+                    
+                    this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    this.ctx.font = '10px Arial';
+                    this.ctx.fillText(`τ=${i + 1}`, px - 12, this.y0 - 15);
                 });
 
-                const gradient = this.ctx.createRadialGradient(
-                    this.ball.x, this.ball.y, 0,
-                    this.ball.x, this.ball.y, this.ball.r
-                );
+                const currentX = this.x0 + this.x * this.scale;
+                const gradient = this.ctx.createRadialGradient(currentX, this.y0, 0, currentX, this.y0, 12);
                 gradient.addColorStop(0, '#667eea');
                 gradient.addColorStop(1, '#764ba2');
                 
                 this.ctx.fillStyle = gradient;
                 this.ctx.beginPath();
-                this.ctx.arc(this.ball.x, this.ball.y, this.ball.r, 0, Math.PI * 2);
+                this.ctx.arc(currentX, this.y0, 12, 0, Math.PI * 2);
                 this.ctx.fill();
-
+                
                 this.ctx.strokeStyle = '#fff';
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
+            },
 
-                this.ctx.fillStyle = '#0f0';
-                this.ctx.fillText(`v = ${Math.abs(this.ball.vx).toFixed(0)} px/s`, 10, 20);
-                this.ctx.fillText(`a = ${this.accel} m/s²`, 10, 40);
+            drawGraphs() {
+                this.drawGraph(this.graphVCtx, this.graphVCanvas, 'v (m/s)', 't (s)', 
+                    this.dataPoints.map(p => ({ x: p.t, y: p.v })), '#667eea');
+                this.drawGraph(this.graphXCtx, this.graphXCanvas, 'x (m)', 't (s)', 
+                    this.dataPoints.map(p => ({ x: p.t, y: p.x })), '#764ba2');
+            },
+
+            drawGraph(ctx, canvas, yLabel, xLabel, data, color) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const pad = 50;
+                
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 5; i++) {
+                    const y = pad + (h - 2 * pad) * i / 4;
+                    ctx.beginPath();
+                    ctx.moveTo(pad, y);
+                    ctx.lineTo(w - 20, y);
+                    ctx.stroke();
+                }
+
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(pad, pad);
+                ctx.lineTo(pad, h - pad);
+                ctx.lineTo(w - 20, h - pad);
+                ctx.stroke();
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(yLabel, 5, 30);
+                ctx.fillText(xLabel, w - 60, h - 10);
+
+                if (data.length < 2) return;
+
+                const xMin = Math.min(...data.map(p => p.x));
+                const xMax = Math.max(...data.map(p => p.x));
+                const yMin = Math.min(...data.map(p => p.y));
+                const yMax = Math.max(...data.map(p => p.y));
+                
+                const xRange = xMax - xMin || 1;
+                const yRange = yMax - yMin || 1;
+
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                data.forEach((p, i) => {
+                    const px = pad + ((p.x - xMin) / xRange) * (w - pad - 30);
+                    const py = h - pad - ((p.y - yMin) / yRange) * (h - 2 * pad);
+                    
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+                
+                ctx.stroke();
+
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Arial';
+                ctx.fillText(yMin.toFixed(1), 5, h - pad + 5);
+                ctx.fillText(yMax.toFixed(1), 5, pad + 5);
             }
         };
 
         window.addEventListener('load', () => sim.init());
     </script>
 </body>
-  </html>
+</html>
