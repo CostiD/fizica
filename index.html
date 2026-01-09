@@ -296,9 +296,8 @@
                            style="width: 80px; padding: 0.3rem; margin-left: 5px;">
                 </label>
                 <label>a (m/s²): 
-                    <input type="range" id="accelSlider" min="-5" max="5" value="2" step="0.5" 
-                           oninput="sim.setAccel(this.value)" style="width: 150px; margin-left: 5px;">
-                    <span id="accelValue">2.0</span>
+                    <input type="number" id="accelInput" value="0.5" step="0.5" 
+                           style="width: 80px; padding: 0.3rem; margin-left: 5px;">
                 </label>
             </div>
 
@@ -312,7 +311,7 @@
 
             <div class="info-box">
                 <p><strong>Parametri actuali:</strong></p>
-                <p id="simInfo">t = 0.0 s | v = 0.0 m/s | x = 0.0 m | a = 2.0 m/s²</p>
+                <p id="simInfo">t = 0.0 s | v = 0.0 m/s | x = 0.0 m | a = 0.5 m/s²</p>
             </div>
 
             <h3 style="margin-top: 2rem;">Grafice în timp real</h3>
